@@ -16,7 +16,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // ================= IDENTITY =================
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false; // change to false para dili required email confirm
+    options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -25,6 +25,24 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+// ================= AUTOMATIC DATABASE MIGRATION & SEEDING =================
+// This block ensures the database is created and seeded on any PC automatically.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        // This replaces the need to run 'Update-Database' manually
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
+}
 
 // ================= PIPELINE =================
 if (app.Environment.IsDevelopment())
@@ -42,7 +60,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 🔥 IMPORTANT (MISSING IN YOUR CODE)
+// Authentication and Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
