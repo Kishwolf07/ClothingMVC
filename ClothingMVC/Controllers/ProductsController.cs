@@ -16,7 +16,6 @@ namespace ClothingMVC.Controllers
             _context = context;
         }
 
-        // GET: Products
         public async Task<IActionResult> Index()
         {
             return View(await _context.Products.ToListAsync());
@@ -26,22 +25,17 @@ namespace ClothingMVC.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
-
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
-
+            var product = await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
             if (product == null) return NotFound();
 
-            return View(product);
+            return PartialView(product);
         }
 
-        // GET: Products/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product)
@@ -52,7 +46,6 @@ namespace ClothingMVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
             return View(product);
         }
 
@@ -60,14 +53,12 @@ namespace ClothingMVC.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            return View(product);
+            return PartialView(product);
         }
 
-        // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Product product)
@@ -80,33 +71,25 @@ namespace ClothingMVC.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(product);
+            return PartialView(product);
         }
 
         // GET: Products/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
-
+            var product = await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
             if (product == null) return NotFound();
 
-            return View(product);
+            return PartialView(product);
         }
 
-        // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products.FindAsync(id);
-
-            if (product != null)
-                _context.Products.Remove(product);
-
+            if (product != null) _context.Products.Remove(product);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
