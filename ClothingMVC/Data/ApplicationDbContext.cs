@@ -24,7 +24,8 @@ namespace ClothingMVC.Data
                     Price = 1999.99m,
                     Description = "Comfort DryFit Masculina Nike",
                     Brand = BrandType.Nike,
-                    ImagePath = "NIKE/Nike-DryFit-Masculina-Unisex.jpg"
+                    ImagePath = "NIKE/Nike-DryFit-Masculina-Unisex.jpg",
+                    Quantity = 10
                 },
                new Product
                {
@@ -33,7 +34,9 @@ namespace ClothingMVC.Data
                    Price = 1999.99m,
                    Description = "Warm Polo shirt Striped for ladies",
                    Brand = BrandType.HAndM,
-                   ImagePath = "HandM/H&M-Polo-Shirt-Striped-Ladies.jpg"
+                   ImagePath = "HandM/H&M-Polo-Shirt-Striped-Ladies.jpg",
+                   Quantity = 10
+
                },
                 new Product
                 {
@@ -42,7 +45,9 @@ namespace ClothingMVC.Data
                     Price = 1999.99m,
                     Description = "Smooth Sweatshirt Unisex",
                     Brand = BrandType.Puma,
-                    ImagePath = "PUMA/Puma-Basic-Sweatshirt-Unisex.jpg"
+                    ImagePath = "PUMA/Puma-Basic-Sweatshirt-Unisex.jpg",
+                    Quantity = 10
+
                 },
                 new Product
                 {
@@ -51,7 +56,9 @@ namespace ClothingMVC.Data
                     Price = 1999.99m,
                     Description = "Stylish Uniqlo middle gauge V neck for ladies",
                     Brand = BrandType.Uniqlo,
-                    ImagePath = "UNIQLO/UNIQLO-Middle-Gauge-V-Neck-Cardigan-Womens.jpg"
+                    ImagePath = "UNIQLO/UNIQLO-Middle-Gauge-V-Neck-Cardigan-Womens.jpg",
+                    Quantity = 10
+
                 },
                 new Product
                 {
@@ -60,7 +67,9 @@ namespace ClothingMVC.Data
                     Price = 1999.99m,
                     Description = "Classic Polo Sweatshirt for Men",
                     Brand = BrandType.Champion,
-                    ImagePath = "CHAMPION/Champion-Polo-Sweatshirt-for-Mens.jpg"
+                    ImagePath = "CHAMPION/Champion-Polo-Sweatshirt-for-Mens.jpg",
+                    Quantity = 10
+
                 }
             );
         }

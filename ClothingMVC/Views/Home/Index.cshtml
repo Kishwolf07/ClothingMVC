@@ -1,14 +1,73 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-5">
+    <div class="row mb-5 text-center">
+        <div class="col-12">
+            <h1 class="fw-bold display-5">Admin Control Center</h1>
+            <p class="text-muted">Inventory overview for 2FT Clothing.</p>
+        </div>
+    </div>
 
-    <p>
-        <a asp-controller="Products" asp-action="Index" class="btn btn-primary" role="button" aria-label="View product">
-            View Product
-        </a>
-    </p>
+    <div class="row justify-content-center g-4">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg text-white bg-dark h-100 p-4" style="border-radius: 1.5rem;">
+                <div class="card-body text-center">
+                    <i class="bi bi-tags display-4 text-primary mb-3"></i>
+                    <h5 class="text-uppercase opacity-50 mb-2">Product Types</h5>
+                    <h1 class="display-2 fw-bold">@ViewBag.TotalProductTypes</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg text-white bg-primary h-100 p-4" style="border-radius: 1.5rem;">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam display-4 text-light mb-3"></i>
+                    <h5 class="text-uppercase opacity-75 mb-2">Total Units in Stock</h5>
+                    <h1 class="display-2 fw-bold">@ViewBag.TotalStock</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="text-center mb-4">Stock Distribution by Brand</h5>
+                <canvas id="brandChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-dark btn-lg rounded-pill px-5">
+                Manage Inventory
+            </a>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('brandChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.BrandNames)),
+                datasets: [{
+                    label: 'Units in Stock',
+                    data: @Html.Raw(Json.Serialize(ViewBag.BrandTotals)),
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    </script>
+}

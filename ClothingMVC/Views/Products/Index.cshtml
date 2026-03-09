@@ -29,6 +29,16 @@
                         <strong>Brand:</strong> @Html.DisplayFor(modelItem => item.Brand)
                         <p class="card-text flex-grow-1">@item.Description</p>
                         <h6 class="text-primary fw-bold mt-2">₱ @item.Price.ToString("N2")</h6>
+                        <div class="mt-2">
+                            @if (item.Quantity > 0)
+                            {
+                                <span class="badge bg-dark">Stock: @item.Quantity</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Out of Stock</span>
+                            }
+                        </div>
                     </div>
 
                     <div class="card-footer bg-white border-0 text-center pb-4">

@@ -23,5 +23,8 @@ namespace ClothingMVC.Models
 
         [Required]
         public string? ImagePath { get; set; }
+
+        [Required]
+        public int Quantity { get; set; }
     }
 }
