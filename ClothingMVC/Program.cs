@@ -4,47 +4,57 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ================= DATABASE =================
+// Database configuration for SQL Server
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// ================= IDENTITY =================
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>();
+// Identity services for user authentication
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// ================= MVC =================
+// Application services for MVC and Cookie routing
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
 
 var app = builder.Build();
 
-// ================= AUTOMATIC DATABASE MIGRATION & SEEDING =================
-// This block ensures the database is created and seeded on any PC automatically.
+// Database migration and Superadmin seeding
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        // This replaces the need to run 'Update-Database' manually
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+
         context.Database.Migrate();
+
+        // Seed Superadmin Account
+        string adminEmail = "admin@2ft.com";
+        string adminPass = "Admin123!"; // Must have Uppercase, Number, and Symbol
+
+        var user = userManager.FindByEmailAsync(adminEmail).Result;
+        if (user == null)
+        {
+            var adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
+            var result = userManager.CreateAsync(adminUser, adminPass).Result;
+        }
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        logger.LogError(ex, "Database migration or seeding error.");
     }
 }
 
-// ================= PIPELINE =================
+// HTTP request pipeline and middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -57,17 +67,12 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// Authentication and Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
+// Route mapping for Controllers and Razor Pages
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 app.Run();
