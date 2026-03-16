@@ -3,11 +3,12 @@ using ClothingMVC.Models;
 using ClothingMVC.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization; 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace ClothingMVC.Controllers
 {
-    [Authorize] // Forces redirect to Login if the user is not signed in
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -21,11 +22,9 @@ namespace ClothingMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Dashboard metrics
             ViewBag.TotalProductTypes = await _context.Products.CountAsync();
             ViewBag.TotalStock = await _context.Products.SumAsync(p => p.Quantity);
 
-            // Data for Chart.js by Brand
             var brandData = await _context.Products
                 .GroupBy(p => p.Brand)
                 .Select(g => new {

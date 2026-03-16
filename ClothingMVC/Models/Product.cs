@@ -7,24 +7,30 @@ namespace ClothingMVC.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(150)]
+        [Required(ErrorMessage = "Please enter the product name")]
+        [StringLength(150, ErrorMessage = "Name cannot exceed 150 characters")]
+        [Display(Name = "Product Name")]
         public string? Name { get; set; }
 
-        [Required]
-        [Range(1, 100000)]
+        [Required(ErrorMessage = "Price is required")]
+        [Range(0.01, 100000, ErrorMessage = "Price must be between 0.01 and 100,000")]
+        [Column(TypeName = "decimal(18,2)")]
+        [DataType(DataType.Currency)]
         public decimal Price { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Please provide a description")]
+        [StringLength(1000, ErrorMessage = "Description is too long")]
         public string? Description { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Please select a brand")]
         public BrandType Brand { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Image path is required")]
+        [Display(Name = "Image File Path")]
         public string? ImagePath { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Quantity is required")]
+        [Range(0, 5000, ErrorMessage = "Quantity must be between 0 and 5,000")]
         public int Quantity { get; set; }
     }
 }

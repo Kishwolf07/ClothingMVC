@@ -4,9 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ClothingMVC.Data;
 using ClothingMVC.Models;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace ClothingMVC.Controllers
 {
+    [Authorize]
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
