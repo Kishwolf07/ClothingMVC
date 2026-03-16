@@ -10,5 +10,5 @@ namespace ClothingMVC.Models
         Puma = 2,
         Uniqlo  = 3,
         Champion = 4
-    }
+    }   
 }
