@@ -1,23 +1,61 @@
-html {
-    font-size: 14px;
+/* --- Hard Focus Admin Buttons --- */
+.btn-admin-action {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border: 2px solid #f0f0f0; /* Firm border for hard focus */
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    padding: 0;
 }
 
-@media (min-width: 768px) {
-    html {
-        font-size: 16px;
+    /* Ensure icons don't steal the click */
+    .btn-admin-action i {
+        pointer-events: none;
+        font-size: 1.1rem;
     }
+
+/* Default Colors */
+.btn-edit i {
+    color: #f39c12;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn-details i {
+    color: #0dcaf0;
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
+.btn-delete i {
+    color: #dc3545;
 }
 
-.navbar-brand {
-    letter-spacing: 1px;
-    text-transform: uppercase;
+/* Hover States: Solid Contrast */
+.btn-edit:hover {
+    background-color: #f39c12;
+    border-color: #f39c12;
+    transform: translateY(-2px);
+}
+
+.btn-details:hover {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    transform: translateY(-2px);
+}
+
+.btn-delete:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    transform: translateY(-2px);
+}
+
+.btn-admin-action:hover i {
+    color: #fff !important;
+}
+
+/* Modal styling for premium feel */
+.modal-content {
+    border-radius: 15px;
 }
