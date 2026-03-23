@@ -91,20 +91,17 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/reset-password-confirm.js"></script>
+
     <script>
         $(document).ready(function () {
-            $("#toggle-password").click(function () {
-                const passwordField = $("#password-input");
-                const icon = $("#toggle-icon");
+            // Check if the user just reset their password
+            var isReset = '@TempData["ResetSuccess"]';
 
-                // Toggle between password and text types
-                const type = passwordField.attr("type") === "password" ? "text" : "password";
-                passwordField.attr("type", type);
-
-                // Toggle the eye icon
-                icon.toggleClass("bi-eye bi-eye-slash");
-            });
+            if (isReset === "true") {
+                window.showResetCompleteAlert();
+            }
         });
     </script>
-
 }

@@ -17,13 +17,12 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace ClothingMVC.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
-    public class ForgotPasswordModel : PageModel
+    public class ResendEmailConfirmationModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailSender _emailSender;
 
-
-        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
+        public ResendEmailConfirmationModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _emailSender = emailSender;
@@ -51,37 +50,31 @@ namespace ClothingMVC.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
 
+        public void OnGet()
+        {
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return Page();
+
+            var user = await _userManager.FindByEmailAsync(Input.Email);
+            if (user != null)
             {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
+                var userId = await _userManager.GetUserIdAsync(user);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new { area = "Identity", userId = userId, code = code },
+                    protocol: Request.Scheme);
 
-                // We always process as if successful for security
-                if (user != null && await _userManager.IsEmailConfirmedAsync(user))
-                {
-                    var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-
-                    var callbackUrl = Url.Page(
-                        "/Account/ResetPassword",
-                        pageHandler: null,
-                        values: new { area = "Identity", code = code, email = Input.Email },
-                        protocol: Request.Scheme);
-
-                    await _emailSender.SendEmailAsync(
-                        Input.Email,
-                        "Reset Password - 2FT Clothing",
-                        $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-                }
-
-                // Set TempData to trigger your window.showResetSuccessAlert
-                TempData["ShowAlert"] = "true";
-                TempData["UserEmail"] = Input.Email;
-
-                return Page(); // Stay on the current minimalist page
+                await _emailSender.SendEmailAsync(Input.Email, "Confirm your email", $"...");
             }
 
+            // Use TempData to trigger the alert and stay on the page
+            TempData["StatusMessage"] = "Verification email sent. Check your inbox.";
             return Page();
         }
     }

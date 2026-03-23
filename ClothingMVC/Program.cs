@@ -1,34 +1,40 @@
 using ClothingMVC.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication; 
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Database Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// This combines your email confirmation requirement and store registration
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true; // Required for security in 2FT
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders(); // Added to support password reset tokens
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-// UPDATED: Strict Cookie Configuration
+// Cookie Configuration
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.LogoutPath = "/Identity/Account/Logout";
-
-    // By setting these to null/default, we ensure the browser treats it 
-    // as a transient session cookie that dies when the browser window closes.
     options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
-    options.Cookie.Name = "ClothingMVC_Session"; // Explicit name helps avoid conflicts
+    options.Cookie.Name = "ClothingMVC_Session";
 });
 
 var app = builder.Build();
@@ -60,6 +66,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -73,18 +80,6 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
-// Force sign-out on start-up
-// This clears any browser cache when you rerun.
-app.Use(async (context, next) =>
-{
-    if (context.User.Identity != null && context.User.Identity.IsAuthenticated)
-    {
-        var signInManager = context.RequestServices.GetRequiredService<SignInManager<IdentityUser>>();
-        await signInManager.SignOutAsync();
-    }
-    await next();
-});
 
 app.UseAuthentication();
 app.UseAuthorization();
