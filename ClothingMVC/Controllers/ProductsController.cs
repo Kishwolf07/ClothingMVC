@@ -46,7 +46,6 @@ namespace ClothingMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product, IFormFile imageFile)
         {
-            // Remove ImagePath from validation because we set it manually after upload
             ModelState.Remove("ImagePath");
 
             if (ModelState.IsValid)
@@ -57,7 +56,6 @@ namespace ClothingMVC.Controllers
                     string fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(imageFile.FileName);
                     string path = Path.Combine(wwwRootPath, "images", fileName);
 
-                    // Ensure directory exists
                     var directory = Path.GetDirectoryName(path);
                     if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
 
@@ -65,11 +63,21 @@ namespace ClothingMVC.Controllers
                     {
                         await imageFile.CopyToAsync(fileStream);
                     }
-
                     product.ImagePath = fileName;
                 }
 
                 _context.Add(product);
+
+                // --- LOGGING ACTION ---
+                _context.ActivityLogs.Add(new Activitylog
+                {
+                    AdminEmail = User.Identity.Name,
+                    Action = "Create",
+                    EntityName = product.Name,
+                    Details = $"Created new product with {product.Quantity} units in stock.",
+                    Timestamp = DateTime.Now
+                });
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -90,7 +98,7 @@ namespace ClothingMVC.Controllers
         {
             if (id != product.Id) return NotFound();
 
-            ModelState.Remove("imageFile"); // Remove file from validation check
+            ModelState.Remove("imageFile");
             ModelState.Remove("ImagePath");
 
             if (ModelState.IsValid)
@@ -111,6 +119,17 @@ namespace ClothingMVC.Controllers
                     }
 
                     _context.Update(product);
+
+                    // --- LOGGING ACTION ---
+                    _context.ActivityLogs.Add(new Activitylog
+                    {
+                        AdminEmail = User.Identity.Name,
+                        Action = "Update",
+                        EntityName = product.Name,
+                        Details = $"Updated product details and inventory levels.",
+                        Timestamp = DateTime.Now
+                    });
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -138,14 +157,19 @@ namespace ClothingMVC.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                if (!string.IsNullOrEmpty(product.ImagePath))
+                // --- LOGGING ACTION ---
+                _context.ActivityLogs.Add(new Activitylog
                 {
-                    var imagePath = Path.Combine(_hostEnvironment.WebRootPath, "images", product.ImagePath);
-                    if (System.IO.File.Exists(imagePath)) System.IO.File.Delete(imagePath);
-                }
+                    AdminEmail = User.Identity.Name,
+                    Action = "Delete",
+                    EntityName = product.Name,
+                    Details = $"Product (ID: {id}) was permanently removed from inventory.",
+                    Timestamp = DateTime.Now
+                });
+
                 _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

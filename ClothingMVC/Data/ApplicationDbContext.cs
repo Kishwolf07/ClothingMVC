@@ -12,6 +12,7 @@ namespace ClothingMVC.Data
         }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<Activitylog> ActivityLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -4,7 +4,6 @@ using ClothingMVC.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 
 namespace ClothingMVC.Controllers
 {
@@ -39,7 +38,16 @@ namespace ClothingMVC.Controllers
             return View();
         }
 
-        public IActionResult Privacy() => View();
+        public async Task<IActionResult> Privacy()
+        {
+            // Retrieves the most recent 50 logs for the 2FT Admin Panel
+            var logs = await _context.ActivityLogs
+                .OrderByDescending(l => l.Timestamp)
+                .Take(50)
+                .ToListAsync();
+
+            return View(logs);
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

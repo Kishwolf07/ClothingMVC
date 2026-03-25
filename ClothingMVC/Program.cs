@@ -6,26 +6,35 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database Configuration
+// 1. Database Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-
-// This combines your email confirmation requirement and store registration
+// 2. Identity Configuration
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = true; // Required for security in 2FT
+    options.SignIn.RequireConfirmedAccount = true;
+
+    // Password Security Requirements
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 6;
+
+    // Identity Setting for Usernames
+    options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders(); // Added to support password reset tokens
+.AddDefaultTokenProviders();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-// Cookie Configuration
+// 3. Cookie Configuration
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
@@ -37,9 +46,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.Name = "ClothingMVC_Session";
 });
 
+// --- CRITICAL FIX: Build the app BEFORE using services ---
 var app = builder.Build();
 
-// Database Migration and Admin Seeding
+// 4. Database Migration and Admin Seeding
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -47,16 +57,33 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+
+        // Apply pending migrations
         context.Database.Migrate();
 
         string adminEmail = "admin@2ft.com";
         string adminPass = "Admin123!";
+        string adminUsername = "SuperAdmin";
 
+        // Check by Email to see if the admin already exists
         var user = userManager.FindByEmailAsync(adminEmail).Result;
+
         if (user == null)
         {
-            var adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-            userManager.CreateAsync(adminUser, adminPass).Wait();
+            var adminUser = new IdentityUser
+            {
+                UserName = adminUsername,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+
+            var result = userManager.CreateAsync(adminUser, adminPass).Result;
+
+            if (!result.Succeeded)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError("Admin user creation failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
         }
     }
     catch (Exception ex)
@@ -66,7 +93,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Middleware Pipeline
+// 5. Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
