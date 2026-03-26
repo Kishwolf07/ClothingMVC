@@ -37,10 +37,11 @@
                                 <span asp-validation-for="Input.Email" class="text-danger small"></span>
                             </div>
 
-                            @* Password Field *@
-                            <div class="form-floating mb-2">
-                                <input asp-for="Input.Password" id="passwordInput" class="form-control border-2 shadow-none" autocomplete="new-password" placeholder="password" />
+                            @* Password Field with Eye Icon *@
+                            <div class="form-floating mb-2 position-relative">
+                                <input asp-for="Input.Password" id="passwordInput" class="form-control border-2 shadow-none" autocomplete="new-password" placeholder="password" style="padding-right: 45px;" />
                                 <label asp-for="Input.Password">Password</label>
+                                <i class="bi bi-eye-slash position-absolute top-50 end-0 translate-middle-y me-3 fs-5 text-muted toggle-password" style="cursor: pointer; z-index: 10;" data-target="passwordInput"></i>
                                 <span asp-validation-for="Input.Password" class="text-danger small"></span>
                             </div>
 
@@ -55,10 +56,11 @@
                                 </ul>
                             </div>
 
-                            @* Confirm Password Field *@
-                            <div class="form-floating mb-4">
-                                <input asp-for="Input.ConfirmPassword" class="form-control border-2 shadow-none" autocomplete="new-password" placeholder="password" />
+                            @* Confirm Password Field with Eye Icon *@
+                            <div class="form-floating mb-4 position-relative">
+                                <input asp-for="Input.ConfirmPassword" id="confirmPasswordInput" class="form-control border-2 shadow-none" autocomplete="new-password" placeholder="password" style="padding-right: 45px;" />
                                 <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                                <i class="bi bi-eye-slash position-absolute top-50 end-0 translate-middle-y me-3 fs-5 text-muted toggle-password" style="cursor: pointer; z-index: 10;" data-target="confirmPasswordInput"></i>
                                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
                             </div>
 
@@ -78,5 +80,27 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    @*  TOGGLING PASSWORD VISIBILITY *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleButtons = document.querySelectorAll('.toggle-password');
+
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        this.classList.replace('bi-eye-slash', 'bi-eye');
+                    } else {
+                        input.type = 'password';
+                        this.classList.replace('bi-eye', 'bi-eye-slash');
+                    }
+                });
+            });
+        });
+    </script>
     <script src="~/js/password-guide.js"></script>
 }
