@@ -3,6 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ClothingMVC.Models
 {
+    public enum ProductStatus
+    {
+        Active = 1,
+        Inactive = 0
+    }
+
     public class Product
     {
         public int Id { get; set; }
@@ -32,5 +38,8 @@ namespace ClothingMVC.Models
         [Required(ErrorMessage = "Quantity is required")]
         [Range(0, 5000, ErrorMessage = "Quantity must be between 0 and 5,000")]
         public int Quantity { get; set; }
+
+        // Default new products to Active
+        public ProductStatus Status { get; set; } = ProductStatus.Active;
     }
 }

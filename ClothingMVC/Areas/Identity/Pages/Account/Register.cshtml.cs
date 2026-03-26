@@ -27,21 +27,18 @@ namespace ClothingMVC.Areas.Identity.Pages.Account
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
-            ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            ILogger<RegisterModel> logger)
         {
             _userManager = userManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
-            _emailSender = emailSender;
         }
 
         [BindProperty]
@@ -89,9 +86,11 @@ namespace ClothingMVC.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
-                // CRITICAL CHANGE: Set UserName from Input.Username, not Input.Email
                 await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
+                // CRITICAL: Set email as confirmed manually
+                user.EmailConfirmed = true;
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
@@ -99,23 +98,11 @@ namespace ClothingMVC.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    // CRITICAL: Log them in immediately
+                    await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
-
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    TempData["RegistrationPending"] = "true";
-                    TempData["UserEmail"] = Input.Email;
-
-                    return RedirectToPage("Login");
+                    // Redirect straight to dashboard/homepage
+                    return LocalRedirect(returnUrl);
                 }
 
                 foreach (var error in result.Errors)
@@ -123,6 +110,7 @@ namespace ClothingMVC.Areas.Identity.Pages.Account
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+
             return Page();
         }
 
@@ -134,8 +122,7 @@ namespace ClothingMVC.Areas.Identity.Pages.Account
             }
             catch
             {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'. " +
-                    $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor.");
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'.");
             }
         }
 

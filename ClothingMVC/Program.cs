@@ -15,7 +15,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // 2. Identity Configuration
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = true;
+    // CRITICAL CHANGE: Set to false to allow immediate login
+    options.SignIn.RequireConfirmedAccount = false;
 
     // Password Security Requirements
     options.Password.RequireDigit = true;
@@ -24,7 +25,6 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequiredLength = 6;
 
-    // Identity Setting for Usernames
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -46,7 +46,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.Name = "ClothingMVC_Session";
 });
 
-// --- CRITICAL FIX: Build the app BEFORE using services ---
 var app = builder.Build();
 
 // 4. Database Migration and Admin Seeding
@@ -58,14 +57,12 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
 
-        // Apply pending migrations
         context.Database.Migrate();
 
         string adminEmail = "admin@2ft.com";
         string adminPass = "Admin123!";
         string adminUsername = "SuperAdmin";
 
-        // Check by Email to see if the admin already exists
         var user = userManager.FindByEmailAsync(adminEmail).Result;
 
         if (user == null)

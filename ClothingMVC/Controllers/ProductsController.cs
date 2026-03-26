@@ -26,7 +26,10 @@ namespace ClothingMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Products.ToListAsync());
+            // ONLY SHOW ACTIVE PRODUCTS IN THE MAIN LIST
+            return View(await _context.Products
+                .Where(p => p.Status == ProductStatus.Active)
+                .ToListAsync());
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -66,15 +69,15 @@ namespace ClothingMVC.Controllers
                     product.ImagePath = fileName;
                 }
 
+                product.Status = ProductStatus.Active;
                 _context.Add(product);
 
-                // --- LOGGING ACTION ---
                 _context.ActivityLogs.Add(new Activitylog
                 {
                     AdminEmail = User.Identity.Name,
                     Action = "Create",
                     EntityName = product.Name,
-                    Details = $"Created new product with {product.Quantity} units in stock.",
+                    Details = $"Created product: {product.Name}. Status: Active.",
                     Timestamp = DateTime.Now
                 });
 
@@ -120,13 +123,12 @@ namespace ClothingMVC.Controllers
 
                     _context.Update(product);
 
-                    // --- LOGGING ACTION ---
                     _context.ActivityLogs.Add(new Activitylog
                     {
                         AdminEmail = User.Identity.Name,
                         Action = "Update",
                         EntityName = product.Name,
-                        Details = $"Updated product details and inventory levels.",
+                        Details = $"Updated {product.Name} details.",
                         Timestamp = DateTime.Now
                     });
 
@@ -157,20 +159,46 @@ namespace ClothingMVC.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                // --- LOGGING ACTION ---
+                // SOFT DELETE LOGIC
+                product.Status = ProductStatus.Inactive;
+                _context.Update(product);
+
                 _context.ActivityLogs.Add(new Activitylog
                 {
                     AdminEmail = User.Identity.Name,
-                    Action = "Delete",
+                    Action = "Delete (Soft)",
                     EntityName = product.Name,
-                    Details = $"Product (ID: {id}) was permanently removed from inventory.",
+                    Details = $"Product (:{id}) was set to INACTIVE",
                     Timestamp = DateTime.Now
                 });
 
-                _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // NEW RESTORE ACTION
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Restore(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return NotFound();
+
+            product.Status = ProductStatus.Active;
+            _context.Update(product);
+
+            _context.ActivityLogs.Add(new Activitylog
+            {
+                AdminEmail = User.Identity.Name,
+                Action = "Restore",
+                EntityName = product.Name,
+                Details = $"Restored product (ID: {id}) back to ACTIVE status.",
+                Timestamp = DateTime.Now
+            });
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Privacy", "Home");
         }
 
         private bool ProductExists(int id)

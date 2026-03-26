@@ -21,10 +21,13 @@ namespace ClothingMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ViewBag.TotalProductTypes = await _context.Products.CountAsync();
-            ViewBag.TotalStock = await _context.Products.SumAsync(p => p.Quantity);
+            // Only count ACTIVE products for Dashboard Stats
+            var activeProducts = _context.Products.Where(p => p.Status == ProductStatus.Active);
 
-            var brandData = await _context.Products
+            ViewBag.TotalProductTypes = await activeProducts.CountAsync();
+            ViewBag.TotalStock = await activeProducts.SumAsync(p => p.Quantity);
+
+            var brandData = await activeProducts
                 .GroupBy(p => p.Brand)
                 .Select(g => new {
                     Brand = g.Key.ToString(),
@@ -40,7 +43,7 @@ namespace ClothingMVC.Controllers
 
         public async Task<IActionResult> Privacy()
         {
-            // Retrieves the most recent 50 logs for the 2FT Admin Panel
+            // Activity Logs retrieval stays the same
             var logs = await _context.ActivityLogs
                 .OrderByDescending(l => l.Timestamp)
                 .Take(50)

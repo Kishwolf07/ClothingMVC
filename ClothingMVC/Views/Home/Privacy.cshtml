@@ -18,7 +18,8 @@
                         <th style="font-size: 0.75rem; letter-spacing: 1px;">ADMIN</th>
                         <th style="font-size: 0.75rem; letter-spacing: 1px;">ACTION</th>
                         <th style="font-size: 0.75rem; letter-spacing: 1px;">ENTITY</th>
-                        <th class="pe-4 text-end" style="font-size: 0.75rem; letter-spacing: 1px;">DETAILS</th>
+                        <th style="font-size: 0.75rem; letter-spacing: 1px;">DETAILS</th>
+                        <th class="pe-4 text-end" style="font-size: 0.75rem; letter-spacing: 1px;">RESTORE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,13 +38,17 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @if (log.Action == "Delete")
+                                    @if (log.Action == "Delete (Soft)")
                                     {
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2">@log.Action</span>
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2">@log.Action</span>
                                     }
                                     else if (log.Action == "Create")
                                     {
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-2">@log.Action</span>
+                                    }
+                                    else if (log.Action == "Restore")
+                                    {
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-2">@log.Action</span>
                                     }
                                     else
                                     {
@@ -51,14 +56,25 @@
                                     }
                                 </td>
                                 <td class="fw-bold small">@log.EntityName</td>
-                                <td class="pe-4 text-end text-muted small">@log.Details</td>
+                                <td class="text-muted small">@log.Details</td>
+                                <td class="pe-4 text-end">
+                                    @if (log.Action == "Delete (Soft)")
+                                    {                                                                         
+                                        <form asp-controller="Products" asp-action="Restore" method="post" class="d-inline">                                        
+                                            <input type="hidden" name="id" value="@log.Details.Split("(ID: ")[1].Split(")")[0]" />
+                                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1">
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-database-exclamation fs-2 d-block mb-2"></i>
                                 No activity logs found in the database.
                             </td>
