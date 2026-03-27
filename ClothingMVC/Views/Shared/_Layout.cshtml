@@ -26,7 +26,6 @@
                             </h3>
                             <small class="text-white-50 fw-bolder d-block mt-1"
                                    style="font-size: 0.7rem; letter-spacing: 2px;">
-                                MANAGEMENT SYSTEM
                             </small>
                         </div>
                     </div>
@@ -37,8 +36,8 @@
                     <div class="d-flex align-items-center p-3 rounded-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
                         <div class="position-relative">
                             @* This takes the first letter of the Username (e.g., 'S' for SuperAdmin) *@
-                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px;">
-                                <span class="fw-bold text-white">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px;">
+                                <span class="fw-bold text-dark">
                                     @(User.Identity.Name?[0].ToString().ToUpper() ?? "?")
                                 </span>
                             </div>
@@ -59,14 +58,27 @@
                 <div class="flex-grow-1 overflow-auto px-3">
                     <p class="text-white-50 small fw-bold mb-2 ms-2" style="font-size: 0.6rem; letter-spacing: 1.5px;">ANALYTICS & DATA</p>
                     <ul class="nav flex-column gap-1 mb-4">
+                        @* Dashboard Link *@
                         <li class="nav-item">
-                            <a asp-controller="Home" asp-action="Index" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center transition-all @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "bg-primary text-white shadow-sm" : "text-white-50 hover-white")">
+                            <a asp-controller="Home" asp-action="Index"
+                               class="nav-link py-2 px-3 rounded-3 d-flex align-items-center transition-all @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "bg-light text-dark shadow-sm" : "text-white-50 hover-white")">
                                 <i class="bi bi-speedometer2 me-3 fs-5"></i> Dashboard
                             </a>
                         </li>
+
+                        @* Manage Inventory Link *@
                         <li class="nav-item">
-                            <a asp-controller="Products" asp-action="Index" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center transition-all @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "bg-primary text-white shadow-sm" : "text-white-50 hover-white")">
+                            <a asp-controller="Products" asp-action="Index"
+                               class="nav-link py-2 px-3 rounded-3 d-flex align-items-center transition-all @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "bg-light text-dark shadow-sm" : "text-white-50 hover-white")">
                                 <i class="bi bi-box-seam me-3 fs-5"></i> Manage Inventory
+                            </a>
+                        </li>
+
+                        @* About Us Link (Adjusted to match) *@
+                        <li class="nav-item">
+                            <a asp-controller="Home" asp-action="About"
+                               class="nav-link py-2 px-3 rounded-3 d-flex align-items-center transition-all @(ViewContext.RouteData.Values["Action"]?.ToString() == "About" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "bg-light text-dark shadow-sm" : "text-white-50 hover-white")">
+                                <i class="bi bi-info-circle me-3 fs-5"></i> About Us
                             </a>
                         </li>
                     </ul>
@@ -75,7 +87,7 @@
                     <ul class="nav flex-column gap-1">
                         <li class="nav-item">
                             @* We point to the Privacy action, but label it as Logs *@
-                            <a asp-controller="Home" asp-action="Privacy" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center transition-all @(ViewContext.RouteData.Values["Action"]?.ToString() == "Privacy" ? "bg-primary text-white shadow-sm" : "text-white-50 hover-white")">
+                            <a asp-controller="Home" asp-action="Privacy" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center transition-all @(ViewContext.RouteData.Values["Action"]?.ToString() == "Privacy" ? "bg-light text-dark shadow-sm" : "text-white-50 hover-white")">
                                 <i class="bi bi-journal-text me-3 fs-5"></i> Activity Logs
                             </a>
                         </li>

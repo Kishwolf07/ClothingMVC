@@ -21,7 +21,6 @@ namespace ClothingMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Only count ACTIVE products for Dashboard Stats
             var activeProducts = _context.Products.Where(p => p.Status == ProductStatus.Active);
 
             ViewBag.TotalProductTypes = await activeProducts.CountAsync();
@@ -41,12 +40,22 @@ namespace ClothingMVC.Controllers
             return View();
         }
 
+        public IActionResult About()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> Privacy()
         {
-            // Activity Logs retrieval stays the same
             var logs = await _context.ActivityLogs
                 .OrderByDescending(l => l.Timestamp)
                 .Take(50)
+                .ToListAsync();
+
+            // Get IDs of products that are currently Inactive
+            ViewBag.InactiveProductIds = await _context.Products
+                .Where(p => p.Status == ProductStatus.Inactive)
+                .Select(p => p.Id)
                 .ToListAsync();
 
             return View(logs);

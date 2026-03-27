@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<ClothingMVC.Models.Activitylog>
 @{
     ViewData["Title"] = "Activity Logs";
+    var inactiveIds = ViewBag.InactiveProductIds as List<int> ?? new List<int>();
 }
 
 <div class="card border-0 shadow-sm rounded-4">
@@ -58,14 +59,31 @@
                                 <td class="fw-bold small">@log.EntityName</td>
                                 <td class="text-muted small">@log.Details</td>
                                 <td class="pe-4 text-end">
-                                    @if (log.Action == "Delete (Soft)")
-                                    {                                                                         
-                                        <form asp-controller="Products" asp-action="Restore" method="post" class="d-inline">                                        
-                                            <input type="hidden" name="id" value="@log.Details.Split("(ID: ")[1].Split(")")[0]" />
-                                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1">
-                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
-                                            </button>
-                                        </form>
+                                    @if (log.Action == "Delete (Soft)" && !string.IsNullOrEmpty(log.Details) && log.Details.Contains("(ID: "))
+                                    {
+                                        var parts = log.Details.Split("(ID: ");
+                                        if (parts.Length > 1)
+                                        {
+                                            var idString = parts[1].Split(')')[0];
+                                            if (int.TryParse(idString, out int productId))
+                                            {
+                                                @if (inactiveIds.Contains(productId))
+                                                {
+                                                    <form asp-controller="Products" asp-action="Restore" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@productId" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1">
+                                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-muted border px-2">
+                                                        <i class="bi bi-check-circle-fill me-1 text-success"></i> Restored
+                                                    </span>
+                                                }
+                                            }
+                                        }
                                     }
                                 </td>
                             </tr>
@@ -76,7 +94,7 @@
                         <tr>
                             <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-database-exclamation fs-2 d-block mb-2"></i>
-                                No activity logs found in the database.
+                                No activity logs found.
                             </td>
                         </tr>
                     }

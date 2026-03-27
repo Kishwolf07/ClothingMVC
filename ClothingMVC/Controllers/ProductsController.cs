@@ -26,7 +26,6 @@ namespace ClothingMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // ONLY SHOW ACTIVE PRODUCTS IN THE MAIN LIST
             return View(await _context.Products
                 .Where(p => p.Status == ProductStatus.Active)
                 .ToListAsync());
@@ -71,13 +70,14 @@ namespace ClothingMVC.Controllers
 
                 product.Status = ProductStatus.Active;
                 _context.Add(product);
+                await _context.SaveChangesAsync(); // Save first to get the ID
 
                 _context.ActivityLogs.Add(new Activitylog
                 {
                     AdminEmail = User.Identity.Name,
                     Action = "Create",
                     EntityName = product.Name,
-                    Details = $"Created product: {product.Name}. Status: Active.",
+                    Details = $"Created {product.Name} (ID: {product.Id}).",
                     Timestamp = DateTime.Now
                 });
 
@@ -128,7 +128,7 @@ namespace ClothingMVC.Controllers
                         AdminEmail = User.Identity.Name,
                         Action = "Update",
                         EntityName = product.Name,
-                        Details = $"Updated {product.Name} details.",
+                        Details = $"Updated {product.Name} (ID: {product.Id}) details.",
                         Timestamp = DateTime.Now
                     });
 
@@ -159,7 +159,6 @@ namespace ClothingMVC.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                // SOFT DELETE LOGIC
                 product.Status = ProductStatus.Inactive;
                 _context.Update(product);
 
@@ -168,7 +167,7 @@ namespace ClothingMVC.Controllers
                     AdminEmail = User.Identity.Name,
                     Action = "Delete (Soft)",
                     EntityName = product.Name,
-                    Details = $"Product (:{id}) was set to INACTIVE",
+                    Details = $"Product {product.Name} (ID: {id}) was set to INACTIVE.",
                     Timestamp = DateTime.Now
                 });
 
@@ -177,13 +176,16 @@ namespace ClothingMVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // NEW RESTORE ACTION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Restore(int id)
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
+
+            // Prevent redundant restoration if already active
+            if (product.Status == ProductStatus.Active)
+                return RedirectToAction("Privacy", "Home");
 
             product.Status = ProductStatus.Active;
             _context.Update(product);
@@ -193,7 +195,7 @@ namespace ClothingMVC.Controllers
                 AdminEmail = User.Identity.Name,
                 Action = "Restore",
                 EntityName = product.Name,
-                Details = $"Restored product (ID: {id}) back to ACTIVE status.",
+                Details = $"Restored {product.Name} (ID: {id}) to ACTIVE status.",
                 Timestamp = DateTime.Now
             });
 
